@@ -87,9 +87,6 @@ def client_thread(conn, player):
                     paddle1.move_down()
                 else:
                     paddle2.move_down()
-
-            game_state = f"{paddle1.y},{paddle2.y},{ball.x},{ball.y},{score[0]},{score[1]}"
-            conn.sendall(str.encode(game_state))
         except:
             break
     conn.close()
@@ -98,7 +95,17 @@ def ball_thread():
     global running, ball
     while running:
         ball.move()
-        pygame.time.delay(30)  # Ajustar el retraso para suavizar el movimiento de la pelota
+        pygame.time.delay(25)  # Ajustar el retraso para suavizar el movimiento de la pelota
+
+def send_game_state(conn):
+    global running, paddle1, paddle2, ball, score
+    while running:
+        try:
+            game_state = f"{paddle1.y},{paddle2.y},{ball.x},{ball.y},{score[0]},{score[1]}"
+            conn.sendall(str.encode(game_state))
+            pygame.time.delay(25)  # Ajustar el retraso para la frecuencia de actualización
+        except:
+            break
 
 def main():
     global running, paddle1, paddle2, ball, score
@@ -121,6 +128,8 @@ def main():
     threading.Thread(target=client_thread, args=(conn1, 0)).start()
     threading.Thread(target=client_thread, args=(conn2, 1)).start()
     threading.Thread(target=ball_thread).start()
+    threading.Thread(target=send_game_state, args=(conn1,)).start()
+    threading.Thread(target=send_game_state, args=(conn2,)).start()
 
     clock = pygame.time.Clock()
     while running:
