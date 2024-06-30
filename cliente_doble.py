@@ -69,10 +69,16 @@ def handle_client(client, player, paddle, opponent_paddle, ball):
                 quit()
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP]:
-            client.send(str.encode('UP'))
-        elif keys[pygame.K_DOWN]:
-            client.send(str.encode('DOWN'))
+        if player == 0:
+            if keys[pygame.K_w]:
+                client.send(str.encode('UP'))
+            elif keys[pygame.K_s]:
+                client.send(str.encode('DOWN'))
+        else:
+            if keys[pygame.K_UP]:
+                client.send(str.encode('UP'))
+            elif keys[pygame.K_DOWN]:
+                client.send(str.encode('DOWN'))
 
         screen.fill(BLACK)
         ball.draw()
@@ -94,11 +100,14 @@ def main():
     clock = pygame.time.Clock()
     score = [0, 0]
 
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('127.0.0.1', 5555))
+    client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client1.connect(('127.0.0.1', 5555))
 
-    player = int(client.recv(1024).decode())
+    client2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client2.connect(('127.0.0.1', 5555))
 
+    player1 = int(client1.recv(1024).decode())
+    player2 = int(client2.recv(1024).decode())
 
     ball = Ball()
     paddle1 = Paddle(20)
@@ -106,14 +115,15 @@ def main():
 
     running = True
 
-    threading.Thread(target=handle_client, args=(client, player, paddle1, paddle2, ball)).start()
-
+    threading.Thread(target=handle_client, args=(client1, player1, paddle1, paddle2, ball)).start()
+    threading.Thread(target=handle_client, args=(client2, player2, paddle2, paddle1, ball)).start()
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                client.close()
+                client1.close()
+                client2.close()
                 pygame.quit()
                 quit()
 

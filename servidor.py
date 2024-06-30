@@ -2,6 +2,7 @@ import socket
 import threading
 import pygame
 import random
+import time
 
 # Dimensiones de la pantalla
 WIDTH, HEIGHT = 800, 600
@@ -12,11 +13,6 @@ PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100
 PADDLE_SPEED = 10
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-
-# Configuración de la pantalla (solo para visualización del servidor)
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pong Server")
 
 class Ball:
     def __init__(self):
@@ -45,13 +41,20 @@ class Ball:
         # Verificar si la pelota ha salido por los lados
         if self.x < 0:
             score[1] += 1
-            self.reset()
+            if score[1] == 10:
+                show_winner_screen("Jugador 2")
+                time.sleep(10)
+                reset_game()
+            else:
+                self.reset()
         elif self.x > WIDTH:
             score[0] += 1
-            self.reset()
-
-    def draw(self):
-        pygame.draw.circle(screen, WHITE, (self.x, self.y), BALL_RADIUS)
+            if score[0] == 10:
+                show_winner_screen("Jugador 1")
+                time.sleep(10)
+                reset_game()
+            else:
+                self.reset()
 
 class Paddle:
     def __init__(self, x):
@@ -67,9 +70,6 @@ class Paddle:
         self.y += PADDLE_SPEED
         if self.y > HEIGHT - PADDLE_HEIGHT:
             self.y = HEIGHT - PADDLE_HEIGHT
-
-    def draw(self):
-        pygame.draw.rect(screen, WHITE, (self.x, self.y, PADDLE_WIDTH, PADDLE_HEIGHT))
 
 def client_thread(conn, player):
     global running, paddle1, paddle2, ball, score
@@ -131,22 +131,13 @@ def main():
     threading.Thread(target=send_game_state, args=(conn1,)).start()
     threading.Thread(target=send_game_state, args=(conn2,)).start()
 
-    clock = pygame.time.Clock()
-    while running:
-        screen.fill(BLACK)
-        ball.draw()
-        paddle1.draw()
-        paddle2.draw()
+def show_winner_screen(winner):
+    pass
 
-        # Mostrar el marcador
-        font = pygame.font.Font(None, 74)
-        text = font.render(str(score[0]), 1, WHITE)
-        screen.blit(text, (250, 10))
-        text = font.render(str(score[1]), 1, WHITE)
-        screen.blit(text, (510, 10))
-
-        pygame.display.update()
-        clock.tick(60)
+def reset_game():
+    global score
+    score = [0, 0]
+    ball.reset()
 
 if __name__ == "__main__":
     main()
