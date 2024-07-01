@@ -7,12 +7,12 @@ import time
 # Dimensiones de la pantalla
 WIDTH, HEIGHT = 800, 600
 BALL_RADIUS = 10
-BALL_SPEED_X = 6  # Velocidad horizontal de la pelota
-BALL_SPEED_Y = 6  # Velocidad vertical de la pelota
+BALL_SPEED_X = 5  # Velocidad horizontal de la pelota
+BALL_SPEED_Y = 5 # Velocidad vertical de la pelota
 PADDLE_LEFT_START_WIDTH = 20
 PADDLE_RIGHT_END_WIDTH = 780
 PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100
-PADDLE_SPEED = 10
+PADDLE_SPEED = 5
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 

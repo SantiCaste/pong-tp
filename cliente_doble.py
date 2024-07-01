@@ -59,8 +59,8 @@ def handle_client(client, player, paddle, opponent_paddle, ball,render):
                     score = [score1, score2]      
             except:
                print("invalid data")
-    #if render:
-    threading.Thread(target=receive_data).start()
+    if render:
+        threading.Thread(target=receive_data).start()
 
     while running:
         for event in pygame.event.get():
@@ -100,9 +100,10 @@ def handle_client(client, player, paddle, opponent_paddle, ball,render):
 
 
 def render():
-    while running:
+    while running: 
        # mutex_game_data.acquire()
         screen.fill(BLACK)
+        ball.draw()
         #Mostrar el marcador
         font = pygame.font.Font(None, 74)
         text = font.render(str(score[0]), 1, WHITE)
@@ -111,9 +112,8 @@ def render():
         screen.blit(text, (510, 10))
         paddle1.draw()
         paddle2.draw()
-        ball.draw()
         pygame.display.update()   
-        clock.tick(60)
+        clock.tick(120)
         #mutex_game_data.release()
 
 
