@@ -56,8 +56,8 @@ def handle_client(client, player, paddle, opponent_paddle, ball,render):
                         paddle.update(p2_y)
                         opponent_paddle.update(p1_y)
                     ball.update(ball_x, ball_y)
-                    score = [score1, score2]      
-            except:
+                    score = [score1, score2]
+            except Exception as e: #esto está al pedo porque pasa muy de vez en cuando
                print("invalid data")
     if render:
         threading.Thread(target=receive_data).start()
@@ -71,6 +71,12 @@ def handle_client(client, player, paddle, opponent_paddle, ball,render):
                 quit()
 
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]: #si apreta la q se desconecta el client
+            #client.close()
+            #pygame.quit()
+            running = False
+            client.send(str.encode('QUIT'))
+
         if player == 0:
             if keys[pygame.K_w]:
                 client.send(str.encode('UP'))

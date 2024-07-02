@@ -9,12 +9,17 @@ WIDTH, HEIGHT = 800, 600
 BALL_RADIUS = 10
 BALL_SPEED_X = 5  # Velocidad horizontal de la pelota
 BALL_SPEED_Y = 5 # Velocidad vertical de la pelota
-PADDLE_LEFT_START_WIDTH = 20
-PADDLE_RIGHT_END_WIDTH = 780
+BALL_ACCELERATION = 0.1
 PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100
-PADDLE_SPEED = 5
+PADDLE_LEFT_START_WIDTH = 20
+PADDLE_RIGHT_END_WIDTH = WIDTH - PADDLE_LEFT_START_WIDTH - PADDLE_WIDTH
+PADDLE_SPEED = 10
+
+MAX_SCORE = 2
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
+winner = -1
 
 class Ball:
     def __init__(self):
@@ -28,6 +33,7 @@ class Ball:
         self.dy = random.choice([-1, 1]) * BALL_SPEED_Y
 
     def move(self):
+        global winner
         self.x += self.dx
         self.y += self.dy
 
@@ -37,26 +43,26 @@ class Ball:
 
         # Rebotar en las paletas
         if self.dx < 0 and paddle1.y < self.y < paddle1.y + PADDLE_HEIGHT and self.x <= PADDLE_LEFT_START_WIDTH + PADDLE_WIDTH + BALL_RADIUS:
-            self.ball_speed_modifier += 0.01
+            self.ball_speed_modifier += BALL_ACCELERATION
             self.dx *= -1 * self.ball_speed_modifier
             self.dx = round(self.dx)
         elif self.dx > 0 and paddle2.y < self.y < paddle2.y + PADDLE_HEIGHT and self.x >= PADDLE_RIGHT_END_WIDTH - BALL_RADIUS:
-            self.ball_speed_modifier += 0.01
+            self.ball_speed_modifier += BALL_ACCELERATION
             self.dx *= -1 * self.ball_speed_modifier
             self.dx = round(self.dx)
         # Verificar si la pelota ha salido por los lados
         elif self.x < 0:
             score[1] += 1
-            if score[1] == 10:
-                show_winner_screen("Jugador 2")
+            if score[1] == MAX_SCORE:
+                winner = 0
                 time.sleep(10)
                 reset_game()
             else:
                 self.reset()
         elif self.x > WIDTH:
             score[0] += 1
-            if score[0] == 10:
-                show_winner_screen("Jugador 1")
+            if score[0] == MAX_SCORE:
+                winner = 1
                 time.sleep(10)
                 reset_game()
             else:
@@ -93,6 +99,10 @@ def client_thread(conn, player):
                     paddle1.move_down()
                 else:
                     paddle2.move_down()
+            elif data == 'QUIT': #AJUSTAR ESTO PORQUE SI SALE UN CLIENTE EL OTRO TAMBIEN
+                conn.close()
+                running = False
+                break
         except:
             conn.close()
             running = False
@@ -105,10 +115,10 @@ def ball_thread():
         pygame.time.delay(30)  # Ajustar el retraso para suavizar el movimiento de la pelota
 
 def send_game_state(conn):
-    global running, paddle1, paddle2, ball, score
+    global running, paddle1, paddle2, ball, score, winner
     while running:
         try:
-            game_state = f"{paddle1.y},{paddle2.y},{ball.x},{ball.y},{score[0]},{score[1]}"
+            game_state = f"{paddle1.y},{paddle2.y},{ball.x},{ball.y},{score[0]},{score[1]},{winner}"
             print(game_state)
             conn.sendall(str.encode(game_state))
             pygame.time.delay(30)  # Ajustar el retraso para la frecuencia de actualización
@@ -138,9 +148,6 @@ def main():
     threading.Thread(target=ball_thread).start()
     threading.Thread(target=send_game_state, args=(conn1,)).start()
     threading.Thread(target=send_game_state, args=(conn2,)).start()
-
-def show_winner_screen(winner):
-    pass
 
 def reset_game():
     global score
