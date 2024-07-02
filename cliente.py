@@ -1,9 +1,7 @@
 import socket
 import threading
 import pygame
-import os
-
-os.environ['SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP'] = "0"
+from random import randint
 
 
 # Dimensiones de la pantalla
@@ -101,71 +99,11 @@ def handle_client(client, paddle_l, paddle_r, ball):
         if winner != -1:
             font = pygame.font.Font(None, 74)
             if winner == 0:
-                text = font.render("Blue Wins", 1, BLUE)
+                text = font.render("Left player Wins", 1, BLUE)
             else:
-                text = font.render("Red Wins", 1, RED)
+                text = font.render("Right player Wins", 1, RED)
             
             screen.blit(text, (250, 250))
-
-        pygame.display.update()
-        clock.tick(60)
-
-def handle_client_OLD(client, player, paddle, opponent_paddle, ball):
-    global running, score
-
-    def receive_data():
-        global running, score
-        while running:
-            try:
-                data = client.recv(1024).decode()
-                if data:
-                    p1_y, p2_y, ball_x, ball_y, score1, score2 = map(int, data.split(','))
-                    if player == 0:
-                        paddle.update(p1_y)
-                        opponent_paddle.update(p2_y)
-                        ball.update(ball_x, ball_y)
-                    else:
-                        paddle.update(p2_y)
-                        opponent_paddle.update(p1_y)
-                        ball.update(ball_x, ball_y)
-
-                    ball.update(ball_x, ball_y) #en realidad esto está mal porque la cancha debería estar espejada
-
-                    score = [score1, score2]
-            except:
-                break
-
-    threading.Thread(target=receive_data).start()
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                client.close()
-                pygame.quit()
-                quit()
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]: #si apreta la 'q' se desconecta el client
-            running = False
-            client.send(str.encode('QUIT'))
-
-        if keys[pygame.K_UP]:
-            client.send(str.encode('UP'))
-        elif keys[pygame.K_DOWN]:
-            client.send(str.encode('DOWN'))
-
-        screen.fill(BLACK)
-        ball.draw()
-        paddle.draw()
-        opponent_paddle.draw()
-
-        # Mostrar el marcador
-        font = pygame.font.Font(None, 74)
-        text = font.render(str(score[0]), 1, WHITE)
-        screen.blit(text, (250, 10))
-        text = font.render(str(score[1]), 1, WHITE)
-        screen.blit(text, (510, 10))
 
         pygame.display.update()
         clock.tick(60)
@@ -184,13 +122,14 @@ def main():
 
     ball = Ball()
 
+
     if player == 0:
         paddleL = Paddle(20, BLUE)
         paddleR = Paddle(WIDTH - 30, RED)
     else:
         paddleL = Paddle(20, RED)
         paddleR = Paddle(WIDTH - 30, BLUE)
-
+    
     running = True
 
     threading.Thread(target=handle_client, args=(client, paddleL, paddleR, ball)).start()
