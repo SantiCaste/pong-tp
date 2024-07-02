@@ -20,7 +20,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong Client")
 
 
-
 class Ball:
     def __init__(self):
         self.x = WIDTH // 2
@@ -97,6 +96,7 @@ def handle_client(client, paddle_l, paddle_r, ball):
 
         # Mostrar el ganador (FALTA EL RESET DEL GUEGO)
         if winner != -1:
+            #running = False #este es para que no siga procesando los inputs
             font = pygame.font.Font(None, 74)
             if winner == 0:
                 text = font.render("Left player Wins", 1, BLUE)
@@ -119,9 +119,7 @@ def main():
     player = int(client.recv(1024).decode())
     print(f"player vale: {player}")
 
-
     ball = Ball()
-
 
     if player == 0:
         paddleL = Paddle(20, BLUE)
@@ -133,7 +131,6 @@ def main():
     running = True
 
     threading.Thread(target=handle_client, args=(client, paddleL, paddleR, ball)).start()
-
 
     while running:
         for event in pygame.event.get():
