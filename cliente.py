@@ -14,6 +14,10 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
+DISPLAY_PLAYER_1 = (100, 200)
+DISPLAY_PLAYER_2 = (WIDTH + 200, 200)
+DISPLAY_CENTER = (WIDTH, 200)
+
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong Client")
@@ -24,7 +28,7 @@ class Paddle_Client:
         self.clock=pygame.time.Clock()
         self.ip = ip
         self.port = port
-        self.localGame = localGame
+        #self.localGame = localGame
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.ip, self.port))
         self.player = int(self.client.recv(1024).decode())
@@ -42,6 +46,7 @@ class Paddle_Client:
         self.score = [0, 0]
         self.winner = -1
         
+        """
         if self.localGame:
             self.handle_key_events = self.handle_key_events_local
             if self.player == 0:
@@ -50,16 +55,15 @@ class Paddle_Client:
                 threading.Thread(target=self.socket_local_srv).start()
         else:
             self.handle_key_events = self.handle_key_events_lan
+        """
 
     #esta función sería para settear las pantallas una al lado de la otra, pero no pude hacerlo andar.
     def set_display(self): 
         print(self.player)   
         if self.player == 0:
-            self.display_x = 100
-            self.display_y = 200
+            self.display_x, self.display_y = DISPLAY_CENTER
         else:
-            self.display_x = WIDTH + 200
-            self.display_y = 200
+            self.display_x, self.display_y = DISPLAY_CENTER
     
     def set_paddle(self):    
         if self.player == 0:
@@ -86,8 +90,10 @@ class Paddle_Client:
                     self.score = [score1, score2]
             except:
                 #break
-                print("invalid")
+                #print("invalid")
+                continue
             
+    """
     def handle_key_events_local(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -115,6 +121,7 @@ class Paddle_Client:
                 self.client.send(str.encode('UP'))
             elif keys[pygame.K_s]:
                 self.client.send(str.encode('DOWN'))
+    """
 
     def handle_key_events_lan(self):
         for event in pygame.event.get():
@@ -137,7 +144,8 @@ class Paddle_Client:
     def handle_client(self):
         while self.running:
             
-            self.handle_key_events()
+            #self.handle_key_events()
+            self.handle_key_events_lan()
             
             self.screen.fill(BLACK)
             self.ball.draw()
@@ -169,6 +177,7 @@ class Paddle_Client:
             pygame.display.update()
             self.clock.tick(60)    
     
+    """
     def socket_local_srv(self):
         listener = Listener(('localhost', 6000), authkey=b'secret password')
         running = True
@@ -194,7 +203,7 @@ class Paddle_Client:
             connClient = Client(('localhost', 6000), authkey=b'secret password')
             print("connClient.conectado")
             connClient.send(str.encode('ok'))
-
+    """
 
 #####CLASS DEFINITION######################################
 class Ball:
@@ -252,33 +261,35 @@ class Button():
 			self.text = self.font.render(self.text_input, True, self.base_color)
 
 def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apretan Q, sino da errores al salir uno de los jugadores.
-    while True:
+    running = True
+    while running:
         screen.fill(BLACK)
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
         MENU_TEXT = pygame.font.Font("Tiny5-regular.ttf",100).render("PONG", True, "#b68f40")
         MENU_RECT = MENU_TEXT.get_rect(center=(400, 100))
 
+        """
         PLAY__LOCAL_BUTTON = Button(None, pos=(400, 250), 
                             text_input="JUGAR LOCAL", font=pygame.font.Font("Tiny5-regular.ttf",75), base_color="#d7fcd4", hovering_color="White")
-        PLAY__LAN_BUTTON = Button(None, pos=(400, 400), 
+        """
+        PLAY__LAN_BUTTON = Button(None, pos=(400, 250), 
                             text_input="JUGAR EN LAN", font=pygame.font.Font("Tiny5-regular.ttf",75), base_color="#d7fcd4", hovering_color="White")
-        QUIT_BUTTON = Button(None, pos=(400, 550), 
+        QUIT_BUTTON = Button(None, pos=(400, 400), 
                             text_input="QUIT", font=pygame.font.Font("Tiny5-regular.ttf",75), base_color="#d7fcd4", hovering_color="White")
 
         screen.blit(MENU_TEXT, MENU_RECT)
 
-        for button in [PLAY__LOCAL_BUTTON,PLAY__LAN_BUTTON, QUIT_BUTTON]:
+        for button in [PLAY__LAN_BUTTON, QUIT_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(screen)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                running = False
                 pygame.quit()
                 #pygame.sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if PLAY__LOCAL_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    play_local()
                 if PLAY__LAN_BUTTON.checkForInput(MENU_MOUSE_POS):
                     play_lan()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
@@ -286,6 +297,7 @@ def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apre
         pygame.display.update()
 
 
+"""
 def play_local():
     loading = True
     intentos = 0
@@ -315,6 +327,7 @@ def play_local():
         screen.fill(BLACK)
         pygame.display.update()
         client.start_game()
+"""
 
 #LA IDEA DEL LAN SERIA NO TENER HARDCODEADA LA IP DEL SOCKET Y EN EL CONSTRUCTOR NO GENERAR EL IPC ENTRE AMBOS CLIENTES POR EL TEMA DEL INPUT
 def play_lan():
@@ -342,7 +355,7 @@ def play_lan():
                 #time.sleep(2)
                 break
             print("try again")
-    if client :         
+    if client:         
         screen.fill(BLACK)     
         pygame.display.update()
         client.start_game()
