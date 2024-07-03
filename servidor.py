@@ -18,6 +18,8 @@ PADDLE_RIGHT_END_WIDTH = WIDTH - PADDLE_LEFT_START_WIDTH - PADDLE_WIDTH
 PADDLE_SPEED = 10
 MAX_SCORE = 2
 
+PAUSE_TIME = 5
+
 #colores
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -111,7 +113,7 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
             self.score[1] += 1
             if self.score[1] == MAX_SCORE:
                 self.winner = 0
-                time.sleep(2)
+                time.sleep(PAUSE_TIME)
                 self.reset_game()
             else:
                 self.ball.reset()
@@ -119,7 +121,7 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
             self.score[0] += 1
             if self.score[0] == MAX_SCORE:
                 self.winner = 1
-                time.sleep(2)
+                time.sleep(PAUSE_TIME)
                 self.reset_game()
             else:
                 self.ball.reset()
