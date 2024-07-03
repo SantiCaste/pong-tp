@@ -261,8 +261,7 @@ class Button():
 			self.text = self.font.render(self.text_input, True, self.base_color)
 
 def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apretan Q, sino da errores al salir uno de los jugadores.
-    running = True
-    while running:
+    while True:
         screen.fill(BLACK)
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
@@ -286,7 +285,6 @@ def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apre
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
                 pygame.quit()
                 #pygame.sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -294,6 +292,7 @@ def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apre
                     play_lan()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                    pygame.quit()
+        
         pygame.display.update()
 
 
