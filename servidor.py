@@ -8,8 +8,8 @@ import time
 WIDTH, HEIGHT = 800, 600
 
 BALL_RADIUS = 10
-BALL_SPEED_X = 5  # Velocidad horizontal de la pelota
-BALL_SPEED_Y = 5 # Velocidad vertical de la pelota
+BALL_SPEED_X = 5  
+BALL_SPEED_Y = 5 
 BALL_ACCELERATION = 0.1
 PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100
 PADDLE_LEFT_START_WIDTH = 20
@@ -35,7 +35,7 @@ class Server:
     def __init__(self):
         return
 
-    def start_game(self): #recibe la conexión e instancia un game
+    def start_game(self): 
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((IP, PORT))
         server.listen(LISTEN)
@@ -51,7 +51,7 @@ class Server:
 
         return
 
-class Game: #game se instancia con los threads de los jugadores que le voy a pasar
+class Game: 
     global games
 
     def __init__(self, conn1, conn2):
