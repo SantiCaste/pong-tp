@@ -38,7 +38,7 @@ class Server:
     def start_game(self): #recibe la conexión e instancia un game
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((IP, PORT))
-        server.listen()
+        server.listen(LISTEN)
 
         print("Esperando conexiones...")
         conn1, addr1 = server.accept()
