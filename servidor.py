@@ -7,9 +7,6 @@ import time
 # Dimensiones de la pantalla
 WIDTH, HEIGHT = 800, 600
 
-#cantidad máxima de juegos
-MAX_GAMES = 2
-
 #parámetros de los elementos
 BALL_RADIUS = 10
 BALL_SPEED_X = 5  # Velocidad horizontal de la pelota
@@ -25,44 +22,15 @@ MAX_SCORE = 2
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-winner = -1
-
-games = []
-cur_games = 0
-
 class Server:
-    global games, cur_games
-
     def __init__(self):
         #self.start_game()
         return
-    
-    def add_game(self, newGame): #SACAR ESTO PORQUE NO LLEGAMOS A DESARROLLARLO
-        #global games, cur_games
-        global games, cur_games
-        if cur_games >= MAX_GAMES:
-            return #no hay salas disponibles
-        games.append(newGame) #esto agrega un nuevo juego
-        cur_games += 1
-
-    def remove_game(self):
-        global games, cur_games
-        if cur_games <= 0:
-            return #no hay salas para eliminar
-    
-        #TODO: ponerle un mutex a esto para que solo termine uno a la vez.
-        games[-1].end_game() #capaz esto está mal, no siempre termina la última sala.
-        games = games[:-1] #faltaría hacer todo el borrado lógico
-        cur_games -= 1
 
     def start_game(self): #recibe la conexión e instancia un game
-        global games, cur_games
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind(('0.0.0.0', 5555))
         server.listen(2)
-
-        if cur_games >= MAX_GAMES:
-            return #no hay salas disponibles
 
         print("Esperando conexiones...")
         conn1, addr1 = server.accept()
@@ -71,8 +39,8 @@ class Server:
         print(f"Jugador 2 conectado: {addr2}")
 
 
-        newGame = Game(conn1, conn2)
-        self.add_game(newGame)
+        self.game = Game(conn1, conn2)
+        self.game.start_game()
 
         return
 
@@ -90,28 +58,13 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
         self.threads = []
         self.winner = -1
 
-        self.start_game()
-
     def start_game(self):
-        self.client1_thread = threading.Thread(target=self.update_client, args=(self.conn1, 0))
-        self.client2_thread = threading.Thread(target=self.update_client, args=(self.conn2, 1))
-        self.ball_thread = threading.Thread(target=self.update_ball)
-        self.conn1_game_state = threading.Thread(target=self.send_game_state, args=(self.conn1,))
-        self.conn2_game_state = threading.Thread(target=self.send_game_state, args=(self.conn2,))
-
-
-        self.threads.extend([self.client1_thread, self.client2_thread, self.ball_thread, self.conn1_game_state, self.conn2_game_state])
-
-        for thread in self.threads:
-            thread.start()
-
+        threading.Thread(target=self.update_client, args=(self.conn1, 0)).start()
+        threading.Thread(target=self.update_client, args=(self.conn2, 1)).start()
+        threading.Thread(target=self.update_ball).start()
+        threading.Thread(target=self.send_game_state, args=(self.conn1,)).start()
+        threading.Thread(target=self.send_game_state, args=(self.conn2,)).start()
         return
-
-    def update(self):
-        ended = self.check_game_finished()
-
-        if ended:
-            self.end_game() #gano X
 
     def reset_game(self):
         self.score = [0,0]
@@ -120,21 +73,12 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
         self.pad_right.reset(PADDLE_RIGHT_END_WIDTH)
         self.winner=-1
 
-    def check_game_finished(self):
-        if self.score[0] == MAX_SCORE or self.score[1] == MAX_SCORE:
-            return True
-        return False
-
     def end_game(self):
-        self.running = False
-            
-
-        return
+        self.running = False            
     
     def send_game_state(self, conn):
         while self.running:
             try:
-                #game_state = f"{self.pad_left.y},{self.pad_right.y},{ball.x},{ball.y},{score[0]},{score[1]},{winner}"
                 game_state = f"{self.pad_left.y},{self.pad_right.y},{self.ball.x},{self.ball.y},{self.score[0]},{self.score[1]},{self.winner}"
                 print(game_state)
                 conn.sendall(str.encode(game_state))
@@ -216,7 +160,6 @@ class Ball:
         self.dy = random.choice([-1, 1]) * BALL_SPEED_Y
 
     def move(self):
-#        global winner
         self.x += self.dx
         self.y += self.dy
 
