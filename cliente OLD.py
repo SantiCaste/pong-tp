@@ -2,13 +2,19 @@ import socket
 import threading
 import pygame
 import pygame.draw
+import os
+from time import sleep,time
 from pygame._sdl2 import Window
 from multiprocessing.connection import Listener,Client
+import os
+import time
+from random import randint
+import tkinter as tk
 
 # Dimensiones de la pantalla
 WIDTH, HEIGHT = 800, 600
 BALL_RADIUS = 10
-PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100
+PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100 #REVISAR LAS COLISIONES QUE ESTAN MEDIO PERUANOIDES
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -27,7 +33,7 @@ class Paddle_Client:
         self.localGame = localGame
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.ip, self.port))
-        self.player = int(self.client.recv(1024).decode())
+        self.player = int(self.client.recv(1024).decode())   
         self.set_display()
         #esta variable de entorno se usa para indicar en qué posición crear la pantalla
         window = Window.from_display_module()
@@ -43,13 +49,10 @@ class Paddle_Client:
         self.winner = -1
         
         if self.localGame:
-            self.handle_key_events = self.handle_key_events_local
-            if self.player == 0:
+            if self.player == 0 : 
                 threading.Thread(target=self.socket_local_client).start()
             else:
                 threading.Thread(target=self.socket_local_srv).start()
-        else:
-            self.handle_key_events = self.handle_key_events_lan
 
     #esta función sería para settear las pantallas una al lado de la otra, pero no pude hacerlo andar.
     def set_display(self): 
@@ -59,7 +62,7 @@ class Paddle_Client:
             self.display_y = 200
         else:
             self.display_x = WIDTH + 200
-            self.display_y = 200
+            self.display_y = 200        
     
     def set_paddle(self):    
         if self.player == 0:
@@ -88,7 +91,7 @@ class Paddle_Client:
                 #break
                 print("invalid")
             
-    def handle_key_events_local(self):
+    def handle_key_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -108,31 +111,13 @@ class Paddle_Client:
             if self.localGame : 
                 if keys[pygame.K_w]:
                     self.connClient.send(str.encode('UP'))                   
-                elif keys[pygame.K_s]:
+                elif keys[pygame.K_s]:       
                     self.connClient.send(str.encode('DOWN')) 
         else:
             if keys[pygame.K_w]:
                 self.client.send(str.encode('UP'))
             elif keys[pygame.K_s]:
                 self.client.send(str.encode('DOWN'))
-
-    def handle_key_events_lan(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-                self.client.close()
-                pygame.quit()
-                quit()
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]: #si apreta la 'q' se desconecta el client
-            self.running = False
-            self.client.send(str.encode('QUIT'))
-        elif keys[pygame.K_UP]:
-            self.client.send(str.encode('UP'))
-        elif keys[pygame.K_DOWN]:
-            self.client.send(str.encode('DOWN'))
-
 
     def handle_client(self):
         while self.running:
@@ -251,7 +236,7 @@ class Button():
 		else:
 			self.text = self.font.render(self.text_input, True, self.base_color)
 
-def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apretan Q, sino da errores al salir uno de los jugadores.
+def main_menu():
     while True:
         screen.fill(BLACK)
         MENU_MOUSE_POS = pygame.mouse.get_pos()
@@ -290,8 +275,8 @@ def play_local():
     loading = True
     intentos = 0
     client = None
-    while loading:
-        try:
+    while loading: 
+        try : 
             screen.fill(BLACK)
             LOADING_TEXT = pygame.font.Font("Tiny5-regular.ttf",100).render("Loading...", True, "#b68f40")
             LOADING_RECT = LOADING_TEXT.get_rect(center=(400, 300))
@@ -311,8 +296,8 @@ def play_local():
                 #time.sleep(2)
                 break
             print("try again")
-    if client :
-        screen.fill(BLACK)
+    if client :         
+        screen.fill(BLACK)     
         pygame.display.update()
         client.start_game()
 
@@ -321,7 +306,7 @@ def play_lan():
     loading = True
     intentos = 0
     client = None
-    while loading:
+    while loading: 
         try : 
             screen.fill(BLACK)
             LOADING_TEXT = pygame.font.Font("Tiny5-regular.ttf",100).render("Loading...", True, "#b68f40")

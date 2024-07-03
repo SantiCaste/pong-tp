@@ -189,7 +189,7 @@ class Paddle:
         self.y = HEIGHT // 2 - PADDLE_HEIGHT // 2
 
 
-def main(): #servidor va instanciando partidas.
+def main():
     sv = Server()
     sv.start_game()
     return
