@@ -82,11 +82,10 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
         while self.running:
             try:
                 game_state = f"{self.pad_left.y},{self.pad_right.y},{self.ball.x},{self.ball.y},{self.score[0]},{self.score[1]},{self.winner}"
-                print(game_state)
+                #print(game_state)
                 conn.sendall(str.encode(game_state))
                 pygame.time.delay(30)  # Ajustar el retraso para la frecuencia de actualización
             except:
-                print("keep looping")
                 return
     
     def update_ball(self):
