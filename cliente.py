@@ -1,11 +1,7 @@
 import socket
 import threading
 import pygame
-from random import randint
-import time
-
 import pygame.draw
-
 
 # Dimensiones de la pantalla
 WIDTH, HEIGHT = 800, 600
@@ -18,6 +14,7 @@ BLUE = (0, 0, 255)
 
 
 # Configuración de la pantalla
+
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong Client")
@@ -25,20 +22,36 @@ pygame.display.set_caption("Pong Client")
 class Paddle_Client:
     def __init__(self, ip, port):
         global screen
-        self.screen= screen
+
         self.clock=pygame.time.Clock()
         self.ip = ip
         self.port = port
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.ip, self.port))
-        
-        self.running = True
-        self.score = [0, 0]
-        self.winner = None
         self.player = int(self.client.recv(1024).decode())
+
+        #self.set_display()
+        #esta variable de entorno se usa para indicar en qué posición crear la pantalla
+        #os.environ['SDL_VIDEO_WINDOW_POS'] = str(self.display_x) + "," + str(self.display_y)
+        #screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        #pygame.display.set_caption("Pong Client")        
+        #screen = self.screen
+        self.screen= screen
         self.set_paddle()
         self.ball = Ball()
+        self.running = True
+        self.score = [0, 0]
+        self.winner = -1
     
+    """esta función sería para settear las pantallas una al lado de la otra, pero no pude hacerlo andar.
+    def set_display(self):    
+        if self.player == 0:
+            self.display_x = 100
+            self.display_y = 200
+        else:
+            self.display_x = WIDTH + 200
+            self.display_y = 200        
+    """
     def set_paddle(self):    
         if self.player == 0:
             self.paddleL = Paddle(20, BLUE)
@@ -46,14 +59,11 @@ class Paddle_Client:
         else:
             self.paddleL = Paddle(20, RED)
             self.paddleR = Paddle(WIDTH - 30, BLUE)
+
             
     def start_game(self):
         threading.Thread(target=self.receive_data).start()
         self.handle_client()
-        return
-    
-    def restart_game(self):
-        
         return
     
     def receive_data(self):
@@ -108,11 +118,13 @@ class Paddle_Client:
                 #running = False #este es para que no siga procesando los inputs
                 font = pygame.font.Font(None, 74)
                 if self.winner == 0:
+                    winner_color = (RED if self.player == 0 else BLUE)
                     text_to_show="Right player Wins"
-                    text_font = font.render(text_to_show, 1, BLUE)
+                    text_font = font.render(text_to_show, 1, winner_color)
                 else:
+                    winner_color = (RED if self.player == 1 else BLUE)
                     text_to_show="Left player Wins"
-                    text_font = font.render(text_to_show, 1, RED)
+                    text_font = font.render(text_to_show, 1, winner_color)
                 
                 self.screen.blit(text_font, (250, 250))
 

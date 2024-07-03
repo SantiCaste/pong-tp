@@ -37,7 +37,7 @@ class Server:
         #self.start_game()
         return
     
-    def add_game(self, newGame):
+    def add_game(self, newGame): #SACAR ESTO PORQUE NO LLEGAMOS A DESARROLLARLO
         #global games, cur_games
         global games, cur_games
         if cur_games >= MAX_GAMES:
