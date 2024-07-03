@@ -118,6 +118,7 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
         self.ball.reset()
         self.pad_left.reset(PADDLE_LEFT_START_WIDTH)
         self.pad_right.reset(PADDLE_RIGHT_END_WIDTH)
+        self.winner=-1
 
     def check_game_finished(self):
         if self.score[0] == MAX_SCORE or self.score[1] == MAX_SCORE:
@@ -166,7 +167,7 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
             self.score[1] += 1
             if self.score[1] == MAX_SCORE:
                 self.winner = 0
-                time.sleep(10)
+                time.sleep(2)
                 self.reset_game()
             else:
                 self.ball.reset()
@@ -174,7 +175,7 @@ class Game: #game se instancia con los threads de los jugadores que le voy a pas
             self.score[0] += 1
             if self.score[0] == MAX_SCORE:
                 self.winner = 1
-                time.sleep(10)
+                time.sleep(2)
                 self.reset_game()
             else:
                 self.ball.reset()
