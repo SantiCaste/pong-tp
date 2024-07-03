@@ -23,12 +23,11 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong Client")
 
 class Paddle_Client:
-    def __init__(self, ip, port,localGame):
+    def __init__(self, ip, port):
         global screen
         self.clock=pygame.time.Clock()
         self.ip = ip
         self.port = port
-        #self.localGame = localGame
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.ip, self.port))
         self.player = int(self.client.recv(1024).decode())
@@ -38,24 +37,12 @@ class Paddle_Client:
         window.position = (self.display_x,self.display_y) # Will place the window around the screen 
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Pong Client")        
-        #screen = self.screen
         self.screen = screen
         self.set_paddle()
         self.ball = Ball()
         self.running = True
         self.score = [0, 0]
         self.winner = -1
-        
-        """
-        if self.localGame:
-            self.handle_key_events = self.handle_key_events_local
-            if self.player == 0:
-                threading.Thread(target=self.socket_local_client).start()
-            else:
-                threading.Thread(target=self.socket_local_srv).start()
-        else:
-            self.handle_key_events = self.handle_key_events_lan
-        """
 
     #esta función sería para settear las pantallas una al lado de la otra, pero no pude hacerlo andar.
     def set_display(self): 
@@ -89,40 +76,8 @@ class Paddle_Client:
                     self.ball.update(ball_x, ball_y)
                     self.score = [score1, score2]
             except:
-                #break
-                #print("invalid")
                 continue
             
-    """
-    def handle_key_events_local(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-                self.client.close()
-                pygame.quit()
-                quit()
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]: #si apreta la 'q' se desconecta el client
-            self.running = False
-            self.client.send(str.encode('QUIT'))
-        if self.player == 0:
-            if keys[pygame.K_UP]:
-                self.client.send(str.encode('UP'))
-            elif keys[pygame.K_DOWN]:
-                self.client.send(str.encode('DOWN'))
-            if self.localGame : 
-                if keys[pygame.K_w]:
-                    self.connClient.send(str.encode('UP'))                   
-                elif keys[pygame.K_s]:
-                    self.connClient.send(str.encode('DOWN')) 
-        else:
-            if keys[pygame.K_w]:
-                self.client.send(str.encode('UP'))
-            elif keys[pygame.K_s]:
-                self.client.send(str.encode('DOWN'))
-    """
-
     def handle_key_events_lan(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -176,34 +131,7 @@ class Paddle_Client:
 
             pygame.display.update()
             self.clock.tick(60)    
-    
-    """
-    def socket_local_srv(self):
-        listener = Listener(('localhost', 6000), authkey=b'secret password')
-        running = True
-        while running:
-            connList = listener.accept()
-            print('connection accepted from', listener.last_accepted)
-            while True:
-                msg = connList.recv()
-                print(msg)
-                self.client.send(msg)
-                if msg == 'close connection':
-                    connList.close()
-                    break
-                if msg == 'close server':
-                    connList.close()
-                    running = False
-                    break
-        listener.close()
 
-    def socket_local_client(self):
-        self.connClient = Client(('localhost', 6000), authkey=b'secret password')
-        while not self.connClient:  
-            connClient = Client(('localhost', 6000), authkey=b'secret password')
-            print("connClient.conectado")
-            connClient.send(str.encode('ok'))
-    """
 
 #####CLASS DEFINITION######################################
 class Ball:
@@ -268,10 +196,6 @@ def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apre
         MENU_TEXT = pygame.font.Font("Tiny5-regular.ttf",100).render("PONG", True, "#b68f40")
         MENU_RECT = MENU_TEXT.get_rect(center=(400, 100))
 
-        """
-        PLAY__LOCAL_BUTTON = Button(None, pos=(400, 250), 
-                            text_input="JUGAR LOCAL", font=pygame.font.Font("Tiny5-regular.ttf",75), base_color="#d7fcd4", hovering_color="White")
-        """
         PLAY__LAN_BUTTON = Button(None, pos=(400, 250), 
                             text_input="JUGAR EN LAN", font=pygame.font.Font("Tiny5-regular.ttf",75), base_color="#d7fcd4", hovering_color="White")
         QUIT_BUTTON = Button(None, pos=(400, 400), 
@@ -296,39 +220,6 @@ def main_menu(): #TODO - Hacer que esto se cierre una vez que los jugadores apre
         pygame.display.update()
 
 
-"""
-def play_local():
-    loading = True
-    intentos = 0
-    client = None
-    while loading:
-        try:
-            screen.fill(BLACK)
-            LOADING_TEXT = pygame.font.Font("Tiny5-regular.ttf",100).render("Loading...", True, "#b68f40")
-            LOADING_RECT = LOADING_TEXT.get_rect(center=(400, 300))
-            screen.blit(LOADING_TEXT, LOADING_RECT)
-            pygame.display.update()
-            client = Paddle_Client("127.0.0.1", 5555,True)
-            loading = False
-        except:
-            intentos+=1
-            if intentos > 2 :
-                ##POR ALGUN MOTIVO NO RENDERIZA EL MENSAJE DE ERROR SI SE TRATA DE INICIAR SIN TENER UN SRV LEVANTADO
-                screen.fill(BLACK)
-                FAIL_TEXT = pygame.font.Font("Tiny5-regular.ttf",25).render("No se pudo establecer la conexion con el servidor", True, "#FF0000")
-                FAIL_RECT = FAIL_TEXT.get_rect(center=(400, 300))
-                screen.blit(FAIL_TEXT, FAIL_RECT)
-                pygame.display.update()
-                #time.sleep(2)
-                break
-            print("try again")
-    if client :
-        screen.fill(BLACK)
-        pygame.display.update()
-        client.start_game()
-"""
-
-#LA IDEA DEL LAN SERIA NO TENER HARDCODEADA LA IP DEL SOCKET Y EN EL CONSTRUCTOR NO GENERAR EL IPC ENTRE AMBOS CLIENTES POR EL TEMA DEL INPUT
 def play_lan():
     loading = True
     intentos = 0
@@ -340,18 +231,16 @@ def play_lan():
             LOADING_RECT = LOADING_TEXT.get_rect(center=(400, 300))
             screen.blit(LOADING_TEXT, LOADING_RECT)
             pygame.display.update()
-            client = Paddle_Client("127.0.0.1", 5555,False)
+            client = Paddle_Client("127.0.0.1", 5555)
             loading = False
         except:
             intentos+=1
             if intentos > 2 :
-                ##POR ALGUN MOTIVO NO RENDERIZA EL MENSAJE DE ERROR SI SE TRATA DE INICIAR SIN TENER UN SRV LEVANTADO
                 screen.fill(BLACK)
                 FAIL_TEXT = pygame.font.Font("Tiny5-regular.ttf",25).render("No se pudo establecer la conexion con el servidor", True, "#FF0000")
                 FAIL_RECT = FAIL_TEXT.get_rect(center=(400, 300))
                 screen.blit(FAIL_TEXT, FAIL_RECT)
                 pygame.display.update()
-                #time.sleep(2)
                 break
             print("try again")
     if client:         
