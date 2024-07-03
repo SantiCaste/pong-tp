@@ -3,7 +3,6 @@ import threading
 import pygame
 import pygame.draw
 from pygame._sdl2 import Window
-from multiprocessing.connection import Listener,Client
 import sys
 
 WIDTH, HEIGHT = 800, 600
